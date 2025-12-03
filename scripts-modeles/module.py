@@ -3,6 +3,8 @@ import xarray as xr
 import numpy as np
 import pandas as pd
 
+from explore4 import lat_min, lon_max, lon_min
+
 
 # ============================================================
 # ========== CALCULS ET0 — 3 MÉTHODES ========================
@@ -73,16 +75,42 @@ class RCMmodel:
         VARIABLES = ['huss', 'pr', 'rlds', 'rsds', 'sfcWind', 'tas', 'tasmin', 'tasmax']
         lon_min, lat_min, lon_max, lat_max = -0.3271761354085185, 42.3329214736443120, 4.8455688506624455, 45.0466746429150078
 
-        if self.simu == "histo" :
-            self.values = {}
+        # -------------------------------
+        # 🎯 Attribut Dictionnaire Final
+        # self.values[var][t_key] = dataset croppé
+        # -------------------------------
+        self.values = {var: {} for var in self.VARIABLES}
 
+    # ---------------------------------------------------------
+    # Chargement + crop + stockage dans self.values
+    # ---------------------------------------------------------
     def load_and_crop(self):
-        for var in VARIABLES :
-            ds = xr.open_dataset(f"/home/carole/Téléchargements/{var}Adjust_{self.name}_{self.simu}_ALADIN64E1.nc")
-            ds = crop_spatial(ds)
-                for year in self.tracc.keys() :
-                    ds = crop_time(ds, self.tracc[year])
-                save ds in variable names after the variable and the tracc key for example huss_t1
+
+        for var in self.VARIABLES:
+
+            # --------------------------------------------
+            # 1) Ouvre le fichier NetCDF associé
+            # --------------------------------------------
+            file_path = f"/home/carole/Téléchargements/{var}Adjust_{self.name}_{self.simu}_ALADIN64E1.nc"
+            print(f"📂 Chargement : {file_path}")
+            ds = xr.open_dataset(file_path)
+
+            # --------------------------------------------
+            # 2) Crop spatial
+            # --------------------------------------------
+            ds = self.crop_spatial(ds, lat_max= 45.0466746429150078, lat_min=42.3329214736443120, lon_max=4.8455688506624455, lon_min=-0.3271761354085185)
+
+            # --------------------------------------------
+            # 3) Crop temporel + stockage dans self.values
+            # --------------------------------------------
+            for t_key, time_sel in self.tracc.items():
+                print(f"   ↳ période t{t_key} : {time_sel}")
+
+                # crop temporel : time_sel = {"start": "...", "end": "..."}
+                ds_t = crop_time(ds, time_sel)
+
+                # 🎯 Stockage dans le dictionnaire
+                self.values[var][f"t{t_key}"] = ds_t
 
 
     # ------------------------------------------
@@ -120,73 +148,6 @@ class RCMmodel:
         mask = ds.time.dt.year.isin(selected_years)
         return ds.sel(time=mask)
 
-    # ------------------------------------------
-    # --- Chargement + traitement générique
-    # ------------------------------------------
-    import requests
-    from pathlib import Path
-    import re
-
-    def download_variable(self, varname, dest_dir):
-        """
-        Télécharge automatiquement le seul fichier NetCDF présent dans :
-            <model_url>/<varname>Adjust/version-hackathon-102025/
-        """
-
-        # Construire l'URL du répertoire en ligne
-        url = f"{self.model_url}{varname}Adjust/version-hackathon-102025/"
-
-        dest_dir = Path(dest_dir)
-        dest_dir.mkdir(parents=True, exist_ok=True)
-
-        # 1) Télécharger la page HTML listant les fichiers
-        r = requests.get(url)
-        if r.status_code != 200:
-            raise ConnectionError(f"Impossible d'accéder à l'URL : {url}")
-
-        html = r.text
-
-        # 2) Trouver le lien vers le fichier .nc unique
-        matches = re.findall(r'href="([^"]+\.nc)"', html)
-
-        if len(matches) == 0:
-            raise FileNotFoundError(f"Aucun fichier .nc trouvé dans : {url}")
-
-        if len(matches) > 1:
-            raise RuntimeError(
-                f"Plusieurs fichiers .nc trouvés, mais un seul était attendu : {matches}")
-
-        filename = matches[0]
-        file_url = url + filename
-
-        # 3) Chemin local
-        local_path = dest_dir / filename
-
-        # 4) Téléchargement du fichier
-        print(f"Téléchargement : {file_url}")
-        with requests.get(file_url, stream=True) as req:
-            req.raise_for_status()
-            with open(local_path, "wb") as f:
-                for chunk in req.iter_content(chunk_size=8192):
-                    f.write(chunk)
-
-        print(f"Fichier téléchargé : {local_path}")
-
-        return local_path
-
-    def process_variable(self, varname, dataset="safran",
-                                  lat_max=None, lat_min=None,
-                                  lon_min=None, lon_max=None):
-        """ varname among : "huss", "pr", "rlds", "rsds", "sfcWind", "tas", "tasmax", "tasmin" """
-
-        fpath = self.model_url + varname+"Adjust/version-hackathon-102025/*"
-        ds = xr.open_dataset(fpath)[[varname]]
-
-        if lat_max is not None:
-            ds = self.crop_spatial(ds, lat_max, lat_min, lon_min, lon_max)
-
-        ds = self.crop_1_year_every_N_years(ds)
-        return ds
 
     # -------------------------------------------------------------
     # -------------------- INDICATEUR ET0 -------------------------
