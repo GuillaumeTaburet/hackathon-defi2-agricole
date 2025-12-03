@@ -28,3 +28,17 @@ La volonté est de créer des rendus cartographiques en réponse aux différente
 Usages pressentis et bénéfices
 L'idée est de créer un/des support(s) visuel(s) parlant(s) pour aborder la question des cultures émergentes sur un territoire donné (petite région agricole, département, bassin versant, ...) et projeter une filière émergente sur divers horizons temporels favorables et défavorables, au regard des trajectoires TRACC. Ainsi, on obtient un support de discussion avec les institutions, opérateurs de filière et agriculteurs pour guider les décisions stratégiques (et en particulier économiques) autour du choix des cultures futures compatibles avec les paramètres climatiques de leurs territoires.
 
+---
+
+### Indicateurs retenus pour notre projet 
+1. Par période de 20 ans, nombre d’occurrence du dépassement du seuil -12 ou de + de 5 fois -7° par hiver 
+2. Par période de 20 ans, nombre d’occurrence du dépassement du seuil 40°C ou 35°C 3 jours consécutifs entre avril et juin.
+3. Par période de 20 ans, nombre d’occurrence du dépassement du seuil -100mm de déficit hydrique sommé sur JJA. 
+4. Par période de 20 ans, nombre d’années où (Tmin + Tmax)/2 <=12°C moins de 70 jours entre novembre et février. 
+5. Evapotranspiration? Seuils? (Carole)
+
+### Démonstrateurs d'indicateurs
+visu_folium_indicateurs/01_indicateur-gel_TRACC_01.html
+[Voir la carte interactive](visu_folium_indicateurs/01_indicateur-gel_TRACC_01.html)
+
+---
