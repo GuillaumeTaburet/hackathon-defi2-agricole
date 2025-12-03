@@ -55,6 +55,7 @@ L’objectif est d’obtenir une carte par indicateur et par modèle, déclinée
 ### Analyse de deux indicateurs : le risque de gel intense et la chaleur extrême
 
 **Pour le risque de gel intense (jours < -12°C)**
+
 _La littérature nous informe qu’un seul jour inférieur à -12°C peut compromettre définitivement la survie de l’olivier._
 
 La période de référence (1960-1979) nous montre que le nombre de jours <-12°C était compris entre 1 et 2j pour pour la majorité du Gers, avec pour quelques zones, plutôt dans le Sud, un nombre compris entre 2 et 3j. Le risque était donc assez important, réduisant grandement la compatibilité de la zone pour la culture de l’olivier au regard de cet indicateur.
@@ -63,6 +64,7 @@ Alors que, sur la période de référence, des contrastes importants existaient 
 Au regard de ce paramètre, la très grande majorité de la région Occitanie devient compatible pour la culture de l’olivier.
 
 **Pour le risque de chaleur intense (jours >40°C)**
+
 _La littérature nous informe qu’un seul jour supérieur à 40°C peut compromettre définitivement la survie de l’olivier._
 
 La période de référence (1960-1979) nous informe qu’aucune zone de l’Occitanie n’était concernée par des journées >40°C.
