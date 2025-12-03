@@ -62,8 +62,8 @@ def et0_fao56_complet(tmin, tmax, tmoy, huss, rlds, rsds, altitude, u2):
 # ===========================================================
 
 class RCMmodel:
-    def __init__(self, name_gcm, simu, step_years=20, et0_method="FAO56_simple"):
-        self.name_gcm = name_gcm
+    def __init__(self, name, simu,step_years=20, et0_method="FAO56_simple"):
+        self.name = name
         self.simu = simu
         self.step_years = step_years        # <-- année sur n ans
         self.et0_method = et0_method        # <-- methode de ET0
