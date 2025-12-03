@@ -65,38 +65,25 @@ class RCMmodel:
     def __init__(self, name, simu,step_years=20, et0_method="FAO56_simple"):
         self.name = name
         self.simu = simu
-        self.step_years = step_years        # <-- année sur n ans
+        self.tracc = self.get_tracc(name, simu)
         self.et0_method = et0_method        # <-- methode de ET0
 
-        # chemins modélisables
-        base_url = "https://console.object.files.data.gouv.fr/browser/meteofrance-drias/SocleM-Climat-2025/"
-        model_url = Path(base_path+f"RCM/EURO-CORDEX/EUR-12/{name_gcm}/r1i1p1f1/{simu}/ssp370/day/")
-
-
-
-        self.file_dict = {"huss" : }
-
-        self.file_safran = base_safran / f"{name_gcm}_{simu}_SAFRAN.nc"
-        self.file_anastasia = base_anastasia / f"{name_gcm}_{simu}_ANASTASIA.nc"
-
-        self.output_dir = Path("./indicateurs") / f"{name_gcm}_{simu}"
+        self.output_dir = Path("./indicateurs") / f"{name}_{simu}"
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        VARIABLES = ['huss', 'pr', 'rlds', 'rsds', 'sfcWind', 'tas', 'tasmin', 'tasmax']
+        lon_min, lat_min, lon_max, lat_max = -0.3271761354085185, 42.3329214736443120, 4.8455688506624455, 45.0466746429150078
 
-    # ------------------------------------------
-    # --- CROP ESPACE
-    # ------------------------------------------
-    def download_all(self):
-        self.file_dict = {"huss" : 0,
-                "pr" : 0,
-                "tas" : 0
-                "swfWind" : 0,
-                "tasmin" : 0,
-                "tasmax" : 0,
-                "rlds" : 0,
-                "rsds" : 0}
+        if self.simu == "histo" :
+            self.values = {}
 
-        for var in self.file_dict.keys() :
-            self.file_dict[var] = self.download_variable(varname= var)
+    def load_and_crop(self):
+        for var in VARIABLES :
+            ds = xr.open_dataset(f"/home/carole/Téléchargements/{var}Adjust_{self.name}_{self.simu}_ALADIN64E1.nc")
+            ds = crop_spatial(ds)
+                for year in self.tracc.keys() :
+                    ds = crop_time(ds, self.tracc[year])
+                save ds in variable names after the variable and the tracc key for example huss_t1
+
 
     # ------------------------------------------
     # --- CROP ESPACE
@@ -107,10 +94,19 @@ class RCMmodel:
     # ------------------------------------------
     # --- SELECTEUR TEMPOREL A PAS DE N ANS
     # ------------------------------------------
-    def crop_1_year_every_N_years(self, ds):
+    def get_tracc(self):
+        if self.simu == "histo" :
+            return{'t1' : 1995}
+        elif self.name == "NorESM2-MM" :
+            return {'t1' : 2040, 't2' : 2059, 't3' : 2079}
+        elif self.name == "CNRM-ESM2-1"
+            return {'t1' : 2042, 't2' : 2062, 't3' : 2081}
+
+    def crop_1_year_every_N_years(self, year):
         """
         Conserve 1 année représentative tous les X ans.
         Exemple : step_years=20 -> on garde 1960, 1980, 2000, etc.
+        A changer pour renvoyer un masque correspondant aux onnées dela tracc spécifique du model. enargumentprend une option t1, t2 ou t3 qui sont es 3 step de la tracc
         """
         years = np.unique(ds.time.dt.year.data)
 
@@ -311,7 +307,7 @@ class RCMmodel:
     # ----------------------- PROCESS ALL -------------------------
     # -------------------------------------------------------------
     def process_all(self, time, tmin, tmax, tmoy, huss, rlds, rsds,
-                    precip, altitude, u2=None, lat=None):
+                    precip, altitude, sfcWind, lat=None):
 
         et0_annuel, et0_journalier = self.indicateur_evapotranspiration(
             time, tmin, tmax, tmoy, huss, rlds, rsds, altitude,
