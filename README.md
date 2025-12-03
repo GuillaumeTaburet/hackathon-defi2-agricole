@@ -37,5 +37,4 @@ L'idée est de créer un/des support(s) visuel(s) parlant(s) pour aborder la que
 4. Par période de 20 ans, nombre d’années où (Tmin + Tmax)/2 <=12°C moins de 70 jours entre novembre et février. 
 5. Evapotranspiration? Seuils? (Carole)
 
-
 ---
