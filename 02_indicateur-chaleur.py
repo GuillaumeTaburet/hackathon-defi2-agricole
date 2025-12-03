@@ -7,11 +7,12 @@ import folium
 
 if __name__ == "__main__":
 
+    # Objectif de l'indicateur :
+    # Par période de 20 ans, nombre d’occurrence du dépassement du seuil 40°C ou 35°C 3 jours consécutifs entre avril et juin.
     ####### PARAMETRES ########
-    nc_file_historique = "data/tasminAdjust_FR-Metro_CNRM-ESM2-1_historical_r1i1p1f2_CNRM-MF_CNRM-ALADIN64E1_v1-r1_MF-CDFt-ANASTASIA-SAFRAN-1985-2014_day_19500101-20141231.nc"
-    nc_file = "data/tasminAdjust_FR-Metro_CNRM-ESM2-1_ssp585_r1i1p1f2_CNRM-MF_CNRM-ALADIN64E1_v1-r1_MF-CDFt-ANASTASIA-SAFRAN-1985-2014_day_20150101-21001231.nc"
-    seuil_01 = 261.15  # K = -12°C
-    seuil_02 = 266.15  # K = -7°C
+    nc_file_historique = "data/tasmaxAdjust_FR-Metro_CNRM-ESM2-1_historical_r1i1p1f2_CNRM-MF_CNRM-ALADIN64E1_v1-r1_MF-CDFt-ANASTASIA-SAFRAN-1985-2014_day_19500101-20141231.nc"
+    nc_file = "data/tasmaxAdjust_FR-Metro_CNRM-ESM2-1_ssp585_r1i1p1f2_CNRM-MF_CNRM-ALADIN64E1_v1-r1_MF-CDFt-ANASTASIA-SAFRAN-1985-2014_day_20150101-21001231.nc"
+    seuil_01 = 313.15  # K = 40°C
 
     # Boite Occitanie
     lat_min, lat_max = 42, 45.5
@@ -35,10 +36,9 @@ if __name__ == "__main__":
         # 1️⃣ Lecture du netcdf
         if tracc == "historique":
             ds = xr.open_dataset(nc_file_historique, engine="netcdf4")
-            # tas = ds["tasminAdjust"]
         else:
             ds = xr.open_dataset(nc_file, engine="netcdf4")
-        tas = ds["tasminAdjust"]
+        tas = ds["tasmaxAdjust"]
 
         # 2️⃣ Sélection temporelle
         tas_sel = tas.sel(time=slice(f"{year_min}-01-01", f"{year_max}-12-31"))
@@ -48,8 +48,8 @@ if __name__ == "__main__":
         lon = ds["lon"].values
         mask = (lat >= lat_min) & (lat <= lat_max) & (lon >= lon_min) & (lon <= lon_max)
 
-        # 4️⃣ Calcul du nombre de jours < seuil
-        occ_all = (tas_sel < seuil_01).sum(dim="time").values  # 2D (y,x)
+        # 4️⃣ Calcul du nombre de jours > seuil
+        occ_all = (tas_sel > seuil_01).sum(dim="time").values  # 2D (y,x)
         occ_all_masked = np.where(mask, occ_all, np.nan)  # ne garder que lla sélection
 
         # 5️⃣ Construction GeoDataFrame vectorisée
@@ -65,7 +65,7 @@ if __name__ == "__main__":
             for j, i in zip(y_inds, x_inds)
         ]
 
-        rows = [{"occ_below_-12C": val / 20} for val in vals]
+        rows = [{"occ_above_40C": val / 20} for val in vals]
         # Création GeoDataFrame plus aisée pour folium
         gdf = gpd.GeoDataFrame(rows, geometry=geoms, crs="EPSG:4326")
         gdf = gdf.reset_index().rename(columns={"index": "id"})
@@ -86,14 +86,14 @@ if __name__ == "__main__":
         folium.Choropleth(
             geo_data=gdf.to_json(),
             data=gdf,
-            columns=["id", "occ_below_-12C"],
+            columns=["id", "occ_above_40C"],
             key_on="feature.properties.id",
-            fill_color="Blues",
+            fill_color="Reds",
             fill_opacity=0.7,
             line_opacity=0,
             nan_fill_color="white",
-            threshold_scale=thresholds,
             legend_name=None,
+            threshold_scale=thresholds,
         ).add_to(m)
 
         # Suppression FORCÉE de la légende Folium
@@ -119,12 +119,16 @@ if __name__ == "__main__":
                 "color": "transparent",
             },
             tooltip=folium.GeoJsonTooltip(
-                fields=["occ_below_-12C"],
-                aliases=["Nb jours par an < -12°C :"],
+                fields=["occ_above_40C"],
+                aliases=["Nb jours par an > 40°C :"],
                 localize=True,
             ),
         ).add_to(m)
 
+        # Supprimer la colorbar générée par Folium
+        for child in list(m._children):
+            if child.startswith("color_map"):
+                del m._children[child]
         # Légende HTML personnalisée avec segments égaux
         legend_html = """
         <div style="
@@ -138,12 +142,12 @@ if __name__ == "__main__":
             z-index: 9999;
             font-size: 13px;
         ">
-        <b>Nombre de jours par an &lt; -12°C</b><br>
-        <i style='background: #deebf7; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>0–1<br>
-        <i style='background: #9ecae1; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>1–2<br>
-        <i style='background: #6baed6; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>2–3<br>
-        <i style='background: #3182bd; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>3–4<br>
-        <i style='background: #08519c; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>&gt;4<br>
+        <b>Nombre de jours par an &gt; 40°C</b><br>
+        <i style='background: #fee5d9; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>0–1<br>
+        <i style='background: #fcbba1; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>1–2<br>
+        <i style='background: #fc9272; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>2–3<br>
+        <i style='background: #fb6a4a; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>3–4<br>
+        <i style='background: #cb181d; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>&gt;4<br>
         </div>
         """
         m.get_root().html.add_child(folium.Element(legend_html))
@@ -151,11 +155,11 @@ if __name__ == "__main__":
         # Titre de la figure (ajout html)
         title_html = f"""
         <h3 align="center" style="font-size:16px">
-            Indicateur de gel : nombre de jours par an avec température minimale inférieure à -12°C
+            Indicateur canicule : nombre de jours par an avec température maximale supérieurs à 40°C
         </h3>
-        <p align="center" style="font-size:14px">
+        <h3 align="center" style="font-size:14px">
             {tracc} : {year_min} – {year_max}
-        </p>
+        </h3>
         <p align="center" style="font-size:14px">
             Modèle RCM : {modele_name}
         </p>
@@ -163,4 +167,4 @@ if __name__ == "__main__":
         m.get_root().html.add_child(folium.Element(title_html))
 
         # Sauvegarde du html
-        m.save(f"01_indicateur-gel_{tracc}.html")
+        m.save(f"02_indicateur-chaleur_{tracc}.html")
