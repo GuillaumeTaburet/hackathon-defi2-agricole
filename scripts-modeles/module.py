@@ -130,23 +130,16 @@ class RCMmodel:
         elif self.name == "CNRM-ESM2-1"
             return {'t1' : 2042, 't2' : 2062, 't3' : 2081}
 
-    def crop_1_year_every_N_years(self, year):
+    def year_selection(self, year):
         """
-        Conserve 1 année représentative tous les X ans.
-        Exemple : step_years=20 -> on garde 1960, 1980, 2000, etc.
-        A changer pour renvoyer un masque correspondant aux onnées dela tracc spécifique du model. enargumentprend une option t1, t2 ou t3 qui sont es 3 step de la tracc
+        A partir de time_sel définir la fenêtre temporelle avec y_start à n-10 
+        et y_end à n+9 pour faire une selection sur le data set (ds)
         """
-        years = np.unique(ds.time.dt.year.data)
-
-        selected_years = []
-        start = years.min()
-        end = years.max()
-
-        for yr in range(start, end + 1, self.step_years):
-            selected_years.append(yr)
-
-        mask = ds.time.dt.year.isin(selected_years)
-        return ds.sel(time=mask)
+             
+        y_start = self.tracc[i] - 10
+        y_end = self.tracc[i] + 9
+        
+        tracc_sel = ds.sel(time=slice(f"{y_start}-01-01", f"{year_end}-12-31"))
 
 
     # -------------------------------------------------------------
