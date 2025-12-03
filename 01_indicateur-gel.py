@@ -8,14 +8,23 @@ import folium
 if __name__ == "__main__":
 
     ####### PARAMETRES ########
-    nc_file = "data/tasminAdjust_FR-Metro_CMCC-CM2-SR5_ssp370_r1i1p1f1_CNRM-MF_CNRM-ALADIN64E1_v1-r1_MF-CDFt-ANASTASIA-SAFRAN-1985-2014_day_20150101-21001231.nc"
+    nc_file_historique = "data/tasminAdjust_FR-Metro_CNRM-ESM2-1_historical_r1i1p1f2_CNRM-MF_CNRM-ALADIN64E1_v1-r1_MF-CDFt-ANASTASIA-SAFRAN-1985-2014_day_19500101-20141231.nc"
+    nc_file = "data/tasminAdjust_FR-Metro_CNRM-ESM2-1_ssp585_r1i1p1f2_CNRM-MF_CNRM-ALADIN64E1_v1-r1_MF-CDFt-ANASTASIA-SAFRAN-1985-2014_day_20150101-21001231.nc"
     seuil_01 = 261.15  # K = -12°C
     seuil_02 = 266.15  # K = -7°C
 
     # Boite Occitanie
-    lat_min, lat_max = 42, 45
-    lon_min, lon_max = -1, 3.5
-    TRACC_dict = {"TRACC_01": 2033, "TRACC_02": 2050, "TRACC_03": 2072}
+    lat_min, lat_max = 42, 45.5
+    lon_min, lon_max = -1, 5
+    shapfile_mask = "shp_Occitanie/Occitanie_based_NUTS.shp"
+
+    TRACC_dict = {
+        "historique": 1970,
+        "TRACC_01": 2042,
+        "TRACC_02": 2062,
+        "TRACC_03": 2081,
+    }
+    modele_name = "CNRM-ESM2-1_ssp585_r1i1p1f2_CNRM-ALADIN64E1_MF-CDFt-ANASTASIA-SAFRAN"
     ###########################
 
     for tracc, year in TRACC_dict.items():
@@ -24,7 +33,11 @@ if __name__ == "__main__":
         print(f"{tracc}: {year_min} – {year_max}")
 
         # 1️⃣ Lecture du netcdf
-        ds = xr.open_dataset(nc_file, engine="netcdf4")
+        if tracc == "historique":
+            ds = xr.open_dataset(nc_file_historique, engine="netcdf4")
+            # tas = ds["tasminAdjust"]
+        else:
+            ds = xr.open_dataset(nc_file, engine="netcdf4")
         tas = ds["tasminAdjust"]
 
         # 2️⃣ Sélection temporelle
@@ -52,29 +65,35 @@ if __name__ == "__main__":
             for j, i in zip(y_inds, x_inds)
         ]
 
-        rows = [{"occ_below_-12C": val} for val in vals]
+        rows = [{"occ_below_-12C": val / 20} for val in vals]
         # Création GeoDataFrame plus aisée pour folium
         gdf = gpd.GeoDataFrame(rows, geometry=geoms, crs="EPSG:4326")
         gdf = gdf.reset_index().rename(columns={"index": "id"})
+
+        # Faire l'intersection avec le shapefile mask
+        gdf_shp_mask = gpd.read_file(shapfile_mask)
+        gdf = gpd.overlay(gdf, gdf_shp_mask, how="intersection")
 
         # 6️⃣ Carte Folium
         center = [gdf.geometry.centroid.y.mean(), gdf.geometry.centroid.x.mean()]
         m = folium.Map(location=center, zoom_start=7)
 
         # Tranches de la colorbar
-        thresholds = [0, 5, 10, 20, 50, 100, 300]
+        # thresholds = [0, 5, 10, 20, 50, 100, 500]
+        # thresholds = [0, 100, 200, 300, 400, 500]
+        thresholds = [0, 1, 2, 3, 4, 365]
 
         folium.Choropleth(
             geo_data=gdf.to_json(),
             data=gdf,
             columns=["id", "occ_below_-12C"],
             key_on="feature.properties.id",
-            fill_color="Reds",
+            fill_color="Blues",
             fill_opacity=0.7,
             line_opacity=0,
             nan_fill_color="white",
-            legend_name="Nombre de jours < -12°C (2023–2043)",
             threshold_scale=thresholds,
+            legend_name=None,
         ).add_to(m)
 
         # Infobulles folium
@@ -86,20 +105,50 @@ if __name__ == "__main__":
                 "color": "transparent",
             },
             tooltip=folium.GeoJsonTooltip(
-                fields=["occ_below_-12C"], aliases=["Nb jours < -12°C :"], localize=True
+                fields=["occ_below_-12C"],
+                aliases=["Nb jours par an < -12°C :"],
+                localize=True,
             ),
         ).add_to(m)
+
+        # Supprimer la colorbar générée par Folium (facultatif)
+        for child in list(m._children):
+            if child.startswith("color_map"):
+                del m._children[child]
+
+        # Légende HTML personnalisée avec segments égaux
+        legend_html = """
+        <div style="
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 140px;
+            background-color: white;
+            padding: 10px;
+            border: 2px solid grey;
+            z-index: 9999;
+            font-size: 13px;
+        ">
+        <b>Nombre de jours par an &lt; -12°C</b><br>
+        <i style='background: #deebf7; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>0–1<br>
+        <i style='background: #9ecae1; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>1–2<br>
+        <i style='background: #6baed6; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>2–3<br>
+        <i style='background: #3182bd; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>3–4<br>
+        <i style='background: #08519c; width: 18px; height: 12px; float: left; margin-right: 8px;'></i>&gt;4<br>
+        </div>
+        """
+        m.get_root().html.add_child(folium.Element(legend_html))
 
         # Titre de la figure (ajout html)
         title_html = f"""
         <h3 align="center" style="font-size:16px">
-            Indicateur de gel : nombre de jours avec température minimale inférieure à -12°C
+            Indicateur de gel : nombre de jours par an avec température minimale inférieure à -12°C
         </h3>
         <p align="center" style="font-size:14px">
             {tracc} : {year_min} – {year_max}
         </p>
         <p align="center" style="font-size:14px">
-            Modèle GCM : CMCC-CM2-SR5
+            Modèle RCM : {modele_name}
         </p>
         """
         m.get_root().html.add_child(folium.Element(title_html))
