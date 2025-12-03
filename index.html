@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hackathon Climat en données - Défi 2 et 8</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 40px;
+            max-width: 900px;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 0.5em;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-top: 1.5em;
+        }
+
+        h3 {
+            font-size: 1.2em;
+            margin-top: 1.2em;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #ccc;
+            margin: 2em 0;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        a {
+            color: #1a0dab;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Hackathon Climat en données</h1>
+    <h2>Défi 2 et 8 - Enjeux des transitions agricoles : Détermination des aires biogéographiques régionales compatibles
+        avec l'implantation d'une culture émergente au sein des climats futurs possibles de la TRACC</h2>
+
+    <h3>Participant.e.s :</h3>
+    <ul>
+        <li>Mathilde HIBON : GIP LIA - ingénieure agronome, indicateurs et visualisations data.</li>
+        <li>Aurélien Mure : CEREMA - compétences data.</li>
+        <li>Carole PERIGOIS : astrophysique et data.</li>
+        <li>Marion HOUDAYER : programmation, manipulation data.</li>
+        <li>Guillaume TABURET : SOLAGRO - programmation, manipulation et visualisation data.</li>
+    </ul>
+
+    <hr>
+
+    <h3>Objectif du projet et problématique résolue</h3>
+    <p>
+        Il existe divers outils de projections des indicateurs agricoles au regard du changement climatique (Climadiag,
+        AgroMetInfo,...). Néanmoins, il est plus difficile de trouver des visuels cartographiques qui projettent des
+        données climatiques futures à une échelle géographique pertinente (petite région agricole, périmètre agricole
+        autour d'une métropole,...) permettant d'informer les décisions pratiques et stratégiques à prendre pour
+        l'avenir de l'agriculture.
+    </p>
+    <p>
+        En particulier, l'adaptation des cultures et le choix de cultures émergentes (olivier, légumineuses,...) sur un
+        territoire donné au regard des futurs climats restent à explorer.
+    </p>
+    <p>
+        L’enjeu est d’outiller l’accompagnement des territoires pour l’adaptation des cultures au changement climatique
+        face à divers stress abiotiques*.
+    </p>
+    <p>
+        Afin d’aborder cet enjeu, nous nous proposons d’explorer la problématique suivante : est-ce que les cultures
+        émergentes évoquées dans des territoires (olivier dans le Gers, légumineuses dans la Haute-Garonne) auront une
+        aire biogéographique compatible avec ces territoires dans les climats futurs de la TRACC ?
+    </p>
+    <p><em>*Se dit d'un facteur lié au milieu, indépendant des êtres vivants (Dictionnaire Le Robert)</em></p>
+
+    <hr>
+
+    <h3>Approche adoptée</h3>
+    <p>
+        La volonté est de créer des rendus cartographiques en réponse aux différentes trajectoires TRACC qui puissent
+        permettre de déterminer les aires biogéographiques compatibles et, idéalement, les fenêtres temporelles les plus
+        favorables et défavorables à la culture en question (ex: olivier). Les données de températures minimales,
+        maximales et de précipitations des simulations RCM seront mobilisées. Un calcul approximatif de l’ETP sera
+        ajouté. A partir de ces données, des indicateurs de compatibilité biogéographiques et climatiques seront
+        calculés, prenant comme référence des seuils phénologiques de stress abiotiques renseignés par la littérature
+        académique (et éventuellement empirique).
+    </p>
+    <p>
+        <strong>Usages pressentis et bénéfices :</strong><br>
+        L'idée est de créer un/des support(s) visuel(s) parlant(s) pour aborder la question des cultures émergentes sur
+        un territoire donné (petite région agricole, département, bassin versant, ...) et projeter une filière émergente
+        sur divers horizons temporels favorables et défavorables, au regard des trajectoires TRACC. Ainsi, on obtient un
+        support de discussion avec les institutions, opérateurs de filière et agriculteurs pour guider les décisions
+        stratégiques (et en particulier économiques) autour du choix des cultures futures compatibles avec les
+        paramètres climatiques de leurs territoires.
+    </p>
+
+    <hr>
+
+    <h3>Indicateurs retenus pour notre projet</h3>
+    <ol>
+        <li>Par période de 20 ans, nombre d’occurrence du dépassement du seuil -12 ou de + de 5 fois -7° par hiver.</li>
+        <li>Par période de 20 ans, nombre d’occurrence du dépassement du seuil 40°C ou 35°C 3 jours consécutifs entre
+            avril et juin.</li>
+        <li>Par période de 20 ans, nombre d’occurrence du dépassement du seuil -100mm de déficit hydrique sommé sur JJA.
+        </li>
+        <li>Par période de 20 ans, nombre d’années où (Tmin + Tmax)/2 ≤12°C moins de 70 jours entre novembre et février.
+        </li>
+        <li>Evapotranspiration? Seuils? (Carole)</li>
+    </ol>
+
+    <h3>Démonstrateurs d'indicateurs</h3>
+    <p>
+        <a href="visu_folium_indicateurs/01_indicateur-gel_TRACC_01.html" target="_blank">Voir la carte interactive</a>
+    </p>
+
+</body>
+
+</html>
