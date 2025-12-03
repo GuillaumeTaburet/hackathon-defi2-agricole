@@ -21,7 +21,6 @@ Pour cela, nous avons tenté de répondre à la problématique suivante : existe
  
  
 ### Les enjeux et usages pour un territoire et ses agricultures : cas de figure du Gers (32)
- 
 Les impacts climatiques sont déjà ressentis par les agriculteurs du Gers : sécheresses plus longues et extrêmes, gels tardifs, pluies intenses en hiver, …
  
 Se reposer sur les connaissances empiriques de la météo et des saisons n’est plus suffisamment efficace, et les réflexions sur les rotations sont de plus en plus opportunistes : les agriculteurs, confrontés à une incertitude grandissante, se tournent vers les cultures et les marchés rémunérateurs sur le court-terme, sans pouvoir bien déceler la viabilité de ces paramètres dans le futur.
